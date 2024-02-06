@@ -1,0 +1,1 @@
+GRPC localhost:50051/online.polpo.hello_world.Greeter/SayHello
