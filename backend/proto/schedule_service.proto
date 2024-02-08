@@ -6,12 +6,12 @@ service ScheduleService {
   rpc Ping (PingRequest) returns (PingReply);
   // Subscribe to the subscriber count stream
   rpc SubscriberCount (SubscriberCountRequest) returns (stream SubscriberCountStreamUpdate);
-//  // Get all events
-//  rpc Events (EventsRequest) returns (stream EventsResponse);
-//  // Subscribe to events
-//  rpc SubscribeToEvents (EventSubscriptionRequest) returns (EventSubscriptionResponse);
-//  // Unsubscribe from events
-//  rpc UnsubscribeFromEvents (EventUnsubscriptionRequest) returns (EventUnsubscriptionResponse);
+  //  // Get all events
+  //  rpc Events (EventsRequest) returns (stream EventsResponse);
+  //  // Subscribe to events
+  //  rpc SubscribeToEvents (EventSubscriptionRequest) returns (EventSubscriptionResponse);
+  //  // Unsubscribe from events
+  //  rpc UnsubscribeFromEvents (EventUnsubscriptionRequest) returns (EventUnsubscriptionResponse);
 }
 
 message PingRequest {}

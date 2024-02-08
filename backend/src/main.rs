@@ -4,8 +4,10 @@
 
 use crate::g_rpc::event_scheduler::schedule_service_server::ScheduleServiceServer;
 use crate::g_rpc::MyScheduleService;
+use tonic::codegen::CompressionEncoding;
 use tonic::transport::Server;
 
+mod db;
 pub mod g_rpc;
 
 #[tokio::main]
@@ -15,8 +17,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Service listening on {}", addr);
 
+    let schedule_service_server = ScheduleServiceServer::new(schedule_service)
+        .accept_compressed(CompressionEncoding::Zstd)
+        .send_compressed(CompressionEncoding::Zstd);
+
     Server::builder()
-        .add_service(ScheduleServiceServer::new(schedule_service))
+        .add_service(schedule_service_server)
         .serve(addr)
         .await?;
 
