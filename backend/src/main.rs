@@ -12,7 +12,9 @@ pub mod g_rpc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "0.0.0.0:50051".parse()?;
+    // GET the address to listen on from an environment variable
+    let addr = std::env::var("ADDRESS")?.parse()?;
+
     let schedule_service = MyScheduleService::default();
 
     println!("Service listening on {}", addr);

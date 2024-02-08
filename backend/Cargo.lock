@@ -1754,18 +1754,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f98d2aa92eebf49b69786be48e4477826b256916e84a57ff2a4f21923b48eb4c"
 
 [[package]]
-name = "schedule-service"
-version = "0.1.0"
-dependencies = [
- "once_cell",
- "prost",
- "sea-orm",
- "tokio",
- "tonic",
- "tonic-build",
-]
-
-[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2252,6 +2240,18 @@ name = "subtle"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
+
+[[package]]
+name = "svelte-rust-event-scheduler"
+version = "0.1.0"
+dependencies = [
+ "once_cell",
+ "prost",
+ "sea-orm",
+ "tokio",
+ "tonic",
+ "tonic-build",
+]
 
 [[package]]
 name = "syn"
