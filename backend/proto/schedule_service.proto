@@ -1,0 +1,54 @@
+syntax = "proto3";
+package online.polp.schedule_service;
+
+service ScheduleService {
+  // Ping the service to check if it is alive
+  rpc Ping (PingRequest) returns (PingReply);
+  // Subscribe to the subscriber count stream
+  rpc SubscriberCount (SubscriberCountRequest) returns (stream SubscriberCountStreamUpdate);
+//  // Get all events
+//  rpc Events (EventsRequest) returns (stream EventsResponse);
+//  // Subscribe to events
+//  rpc SubscribeToEvents (EventSubscriptionRequest) returns (EventSubscriptionResponse);
+//  // Unsubscribe from events
+//  rpc UnsubscribeFromEvents (EventUnsubscriptionRequest) returns (EventUnsubscriptionResponse);
+}
+
+message PingRequest {}
+
+message PingReply {
+  string message = 1;
+}
+
+message SubscriberCountRequest {}
+
+message SubscriberCountStreamUpdate {
+  int32 id = 1;
+  int32 subscriberCount = 2;
+}
+
+message EventsRequest {}
+
+message EventsResponse {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  string location = 4;
+}
+
+message EventSubscriptionRequest {
+  repeated int32 id = 1;
+}
+
+message EventSubscriptionResponse {
+  bool success = 1;
+}
+
+message EventUnsubscriptionRequest {
+  repeated int32 id = 1;
+}
+
+message EventUnsubscriptionResponse {
+  bool success = 1;
+}
+

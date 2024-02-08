@@ -1,1 +1,3 @@
-GRPC localhost:50051/online.polpo.hello_world.Greeter/SayHello
+//GRPC localhost:50051/online.polp.schedule_service.ScheduleService/Ping
+
+GRPC localhost:50051/online.polp.schedule_service.ScheduleService/SubscriberCount
