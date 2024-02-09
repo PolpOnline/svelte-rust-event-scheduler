@@ -9,13 +9,11 @@ WORKDIR /usr/src/app
 # Copy the project's source code to the WORKDIR
 COPY . .
 
-RUN rustup default stable
-
 RUN apt update && \
-    apt install -y cmake golang lynx protobuf-compiler libc6
+    apt install -y protobuf-compiler
 
 # Build the Rust project
-RUN cargo install --path .
+RUN cargo install --profile release --path .
 
 # Start a new build stage - this is where the application will be run
 FROM debian:latest
