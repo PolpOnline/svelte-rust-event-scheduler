@@ -1,12 +1,39 @@
-use mpsc::Receiver;
 use std::pin::Pin;
 use std::sync::Arc;
+
+use color_eyre::eyre::{eyre, Result};
+use futures::future::join_all;
+use mpsc::Receiver;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::{mpsc, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
+use tonic::codec::CompressionEncoding;
 use tonic::codegen::tokio_stream;
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
+use tonic::transport::Server;
 use tonic::{Request, Response, Status};
+
+use crate::g_rpc::event_scheduler::schedule_service_server::ScheduleServiceServer;
+
+pub async fn start_server() -> Result<()> {
+    // GET the address to listen on from an environment variable
+    let addr = std::env::var("ADDRESS")?.parse()?;
+
+    let schedule_service = MyScheduleService::default();
+
+    println!("Service listening on {}", addr);
+
+    let schedule_service_server = ScheduleServiceServer::new(schedule_service)
+        .accept_compressed(CompressionEncoding::Zstd)
+        .send_compressed(CompressionEncoding::Zstd);
+
+    Server::builder()
+        .add_service(schedule_service_server)
+        .serve(addr)
+        .await?;
+
+    Ok(())
+}
 
 type ResponseStream = Pin<
     Box<dyn Stream<Item = Result<event_scheduler::SubscriberCountStreamUpdate, Status>> + Send>,
@@ -27,17 +54,20 @@ impl MyScheduleService {
     async fn notify_subscribers_task(
         &self,
         mut update: Receiver<event_scheduler::SubscriberCountStreamUpdate>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<()> {
         loop {
-            let update = update.recv().await.ok_or(
-                "Unable to receive SubscriberCountStreamUpdate, the channel has been closed",
-            )?;
+            let update = update.recv().await.ok_or(eyre!(
+                "Unable to receive SubscriberCountStreamUpdate, the channel has been closed"
+            ))?;
             let subscribers = self.subscribers.lock().await;
 
-            // TODO: make this a parallel operation
+            let mut futures = Vec::with_capacity(subscribers.len());
+
             for subscriber in subscribers.iter() {
-                subscriber.send(update.clone()).await?;
+                futures.push(subscriber.send(update.clone()));
             }
+
+            join_all(futures).await;
         }
     }
 }
