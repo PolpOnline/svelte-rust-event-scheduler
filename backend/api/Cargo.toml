@@ -1,0 +1,23 @@
+[package]
+name = "svelte-rust-event-scheduler-api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+entity = { path = "../entity" }
+migration = { path = "../migration" }
+svelte-rust-event-scheduler-service = { path = "../service" }
+dotenvy = "0.15.7"
+tonic = { version = "0.11.0" , features = ["tls", "zstd", "gzip"] }
+prost = "0.12"
+tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
+once_cell = "1.19.0"
+color-eyre = "0.6.2"
+futures = "0.3.30"
+
+[build-dependencies]
+tonic-build = "0.11.0"
+

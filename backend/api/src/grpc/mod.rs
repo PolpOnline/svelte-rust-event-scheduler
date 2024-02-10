@@ -1,6 +1,7 @@
 use std::pin::Pin;
 use std::sync::Arc;
 
+use crate::grpc::event_scheduler::schedule_service_server::ScheduleServiceServer;
 use color_eyre::eyre::{eyre, Result};
 use event_scheduler::schedule_service_server::ScheduleService;
 use futures::future::join_all;
@@ -13,8 +14,6 @@ use tonic::codegen::tokio_stream;
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
-
-use crate::g_rpc::event_scheduler::schedule_service_server::ScheduleServiceServer;
 
 pub async fn start_server() -> Result<()> {
     // GET the address to listen on from an environment variable

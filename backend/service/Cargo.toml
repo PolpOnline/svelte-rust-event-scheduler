@@ -1,0 +1,23 @@
+[package]
+name = "svelte-rust-event-scheduler-service"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+entity = { path = "../entity" }
+
+[dependencies.sea-orm]
+version = "0.12.14" # sea-orm version
+features = [
+    "debug-print",
+    "runtime-tokio-rustls",
+    # "sqlx-mysql",
+    "sqlx-postgres",
+    # "sqlx-sqlite",
+]
+
+[dev-dependencies]
+tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
