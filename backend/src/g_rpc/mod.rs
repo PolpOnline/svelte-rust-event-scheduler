@@ -2,6 +2,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use color_eyre::eyre::{eyre, Result};
+use event_scheduler::schedule_service_server::ScheduleService;
 use futures::future::join_all;
 use mpsc::Receiver;
 use tokio::sync::mpsc::Sender;
@@ -73,7 +74,7 @@ impl MyScheduleService {
 }
 
 #[tonic::async_trait]
-impl event_scheduler::schedule_service_server::ScheduleService for MyScheduleService {
+impl ScheduleService for MyScheduleService {
     async fn ping(
         &self,
         request: Request<event_scheduler::PingRequest>,
