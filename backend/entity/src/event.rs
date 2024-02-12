@@ -9,6 +9,9 @@ pub struct Model {
     pub id: i32,
     pub name: String,
     pub description: String,
+    pub room: String,
+    pub zone: String,
+    pub floor: String,
     pub minimum_section: i32,
 }
 

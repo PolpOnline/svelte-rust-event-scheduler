@@ -1,11 +1,19 @@
+mod entity_response_conversion;
+
+use std::env;
 use std::pin::Pin;
 use std::sync::Arc;
 
 use crate::grpc::event_scheduler::schedule_service_server::ScheduleServiceServer;
-use color_eyre::eyre::{eyre, Result};
+use crate::grpc::event_scheduler::{EventsResponse, SubscriberCountStreamUpdate};
 use event_scheduler::schedule_service_server::ScheduleService;
 use futures::future::join_all;
-use mpsc::Receiver;
+use migration::{Migrator, MigratorTrait};
+use svelte_rust_event_scheduler_service::{
+    sea_orm,
+    sea_orm::{Database, DatabaseConnection},
+    Query,
+};
 use tokio::sync::mpsc::Sender;
 use tokio::sync::{mpsc, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
@@ -14,14 +22,40 @@ use tonic::codegen::tokio_stream;
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
+use tracing::info;
 
-pub async fn start_server() -> Result<()> {
+#[derive(Debug, thiserror::Error)]
+pub enum StartServerError {
+    #[error("Failed to get address from environment variable")]
+    AddressVar(#[from] env::VarError),
+
+    #[error("Failed to parse address")]
+    AddrParse(#[from] std::net::AddrParseError),
+
+    #[error("Failed to connect to the database")]
+    DatabaseConnection(#[from] sea_orm::error::DbErr),
+
+    #[error("Failed to run migrations")]
+    Migration(#[from] migration::error::Error),
+
+    #[error("Failed to start the server")]
+    Server(#[from] tonic::transport::Error),
+}
+
+pub async fn start_server() -> Result<(), StartServerError> {
     // GET the address to listen on from an environment variable
-    let addr = std::env::var("ADDRESS")?.parse()?;
+    let addr = env::var("ADDRESS")?.parse()?;
 
-    let schedule_service = MyScheduleService::default();
+    let db_url = env::var("DATABASE_URL")?;
+    let db = Database::connect(db_url).await?;
+    Migrator::up(&db, None).await?;
 
-    println!("Service listening on {}", addr);
+    let schedule_service = MyScheduleService {
+        database: db,
+        ..Default::default()
+    };
+
+    info!("Service listening on {}", addr);
 
     let schedule_service_server = ScheduleServiceServer::new(schedule_service)
         .accept_compressed(CompressionEncoding::Zstd)
@@ -35,30 +69,34 @@ pub async fn start_server() -> Result<()> {
     Ok(())
 }
 
-type ResponseStream = Pin<
-    Box<dyn Stream<Item = Result<event_scheduler::SubscriberCountStreamUpdate, Status>> + Send>,
->;
+#[derive(Debug, thiserror::Error, tonic_thiserror::TonicThisError)]
+enum ResponseStreamEventsError {
+    #[error("Failed to get events")]
+    #[code(Internal)]
+    DatabaseError(#[from] sea_orm::error::DbErr),
+}
+
+type ResponseStreamSubscriberCount =
+    Pin<Box<dyn Stream<Item = Result<SubscriberCountStreamUpdate, Status>> + Send>>;
+
+type ResponseStreamEvents =
+    Pin<Box<dyn Stream<Item = Result<event_scheduler::EventsResponse, Status>> + Send>>;
 
 pub mod event_scheduler {
     tonic::include_proto!("online.polp.schedule_service");
 }
 
-type SubscribersToNotify = Vec<Sender<event_scheduler::SubscriberCountStreamUpdate>>;
+type SubscribersToNotify = Vec<Sender<SubscriberCountStreamUpdate>>;
 
 #[derive(Default)]
 pub struct MyScheduleService {
     subscribers: Arc<Mutex<SubscribersToNotify>>,
+    database: DatabaseConnection,
 }
 
 impl MyScheduleService {
-    async fn notify_subscribers_task(
-        &self,
-        mut update: Receiver<event_scheduler::SubscriberCountStreamUpdate>,
-    ) -> Result<()> {
+    pub async fn notify_subscribers(&self, update: SubscriberCountStreamUpdate) {
         loop {
-            let update = update.recv().await.ok_or(eyre!(
-                "Unable to receive SubscriberCountStreamUpdate, the channel has been closed"
-            ))?;
             let subscribers = self.subscribers.lock().await;
 
             let mut futures = Vec::with_capacity(subscribers.len());
@@ -86,17 +124,12 @@ impl ScheduleService for MyScheduleService {
         Ok(Response::new(reply))
     }
 
-    type SubscriberCountStream = ResponseStream;
+    type SubscriberCountStream = ResponseStreamSubscriberCount;
 
     async fn subscriber_count(
         &self,
-        request: Request<event_scheduler::SubscriberCountRequest>,
+        _request: Request<event_scheduler::SubscriberCountRequest>,
     ) -> Result<Response<Self::SubscriberCountStream>, Status> {
-        println!(
-            "Got a subscriber count streaming request from {:?}",
-            request.remote_addr()
-        );
-
         let (tx, rx) = mpsc::channel(4);
 
         self.subscribers.lock().await.push(tx);
@@ -104,6 +137,35 @@ impl ScheduleService for MyScheduleService {
         let output_stream = ReceiverStream::new(rx).map(Ok::<_, Status>);
         Ok(Response::new(
             Box::pin(output_stream) as Self::SubscriberCountStream
+        ))
+    }
+
+    type EventsStream = ResponseStreamEvents;
+
+    async fn events(
+        &self,
+        request: Request<event_scheduler::EventsRequest>,
+    ) -> Result<Response<Self::EventsStream>, Status> {
+        self.events_impl(&request).await.map_err(|e| e.into())
+    }
+}
+
+impl MyScheduleService {
+    async fn events_impl(
+        &self,
+        _request: &Request<event_scheduler::EventsRequest>,
+    ) -> Result<Response<ResponseStreamEvents>, ResponseStreamEventsError> {
+        let events = Query::get_all_events(&self.database).await?;
+
+        let events = events.into_iter().map(|event| {
+            let event: EventsResponse = event.into();
+            event
+        });
+
+        let output_stream = tokio_stream::iter(events.into_iter().map(Ok::<_, Status>));
+
+        Ok(Response::new(
+            Box::pin(output_stream) as ResponseStreamEvents
         ))
     }
 }
