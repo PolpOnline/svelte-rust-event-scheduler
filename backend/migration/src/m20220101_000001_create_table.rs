@@ -69,7 +69,6 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Event::Name).string().not_null())
-                    .col(ColumnDef::new(Event::Description).string().not_null())
                     .col(ColumnDef::new(Event::Room).string().not_null())
                     .col(ColumnDef::new(Event::Zone).string().not_null())
                     .col(ColumnDef::new(Event::Floor).string().not_null())
@@ -220,7 +219,6 @@ enum Event {
     Table,
     Id,
     Name,
-    Description,
     Room,
     Zone,
     Floor,

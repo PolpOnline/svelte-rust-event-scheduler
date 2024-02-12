@@ -32,11 +32,10 @@ message EventsRequest {}
 message EventsResponse {
   int32 id = 1;
   string name = 2;
-  string description = 3;
-  string room = 4;
-  string zone = 5;
-  string floor = 6;
-  int32 minimumSection = 7;
+  string room = 3;
+  string zone = 4;
+  string floor = 5;
+  int32 minimumSection = 6;
 }
 
 message EventSubscriptionRequest {

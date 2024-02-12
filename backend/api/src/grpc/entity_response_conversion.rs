@@ -19,7 +19,6 @@ impl_from!(
     EventsResponse,
     id,
     name,
-    description,
     room,
     zone,
     floor,

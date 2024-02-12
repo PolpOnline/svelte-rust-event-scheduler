@@ -8,7 +8,6 @@ use crate::sea_orm::TransactionTrait;
 #[derive(Debug, Clone)]
 pub struct XlsxEvent {
     pub name: String,
-    pub description: String,
     pub room: String,
     pub zone: String,
     pub floor: String,
@@ -123,7 +122,6 @@ mod xlsx_deserialization {
             }
 
             events.push(XlsxEvent {
-                description: name.clone(),
                 name,
                 room,
                 zone,
@@ -152,7 +150,6 @@ impl MigrationTrait for Migration {
             event::ActiveModel {
                 id: Default::default(),
                 name: Set(xlsx_event.name),
-                description: Set(xlsx_event.description),
                 room: Set(xlsx_event.room),
                 zone: Set(xlsx_event.zone),
                 floor: Set(xlsx_event.floor),
