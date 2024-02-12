@@ -191,14 +191,9 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Drop the Event table
+        // Drop the RoundMaxUsers table
         manager
-            .drop_table(Table::drop().table(Event::Table).to_owned())
-            .await?;
-
-        // Drop the User table
-        manager
-            .drop_table(Table::drop().table(User::Table).to_owned())
+            .drop_table(Table::drop().table(RoundMaxUsers::Table).to_owned())
             .await?;
 
         // Drop the EventUser table
@@ -206,9 +201,14 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(EventUser::Table).to_owned())
             .await?;
 
-        // Drop the RoundMaxUsers table
+        // Drop the User table
         manager
-            .drop_table(Table::drop().table(RoundMaxUsers::Table).to_owned())
+            .drop_table(Table::drop().table(User::Table).to_owned())
+            .await?;
+
+        // Drop the Event table
+        manager
+            .drop_table(Table::drop().table(Event::Table).to_owned())
             .await?;
 
         Ok(())
