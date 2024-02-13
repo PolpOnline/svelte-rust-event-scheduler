@@ -1,0 +1,7 @@
+[config]
+default_to_workspace = false
+
+[tasks.entity]
+install_crate = "sea-orm-cli"
+command = "sea"
+args = ["generate", "entity", "-o", "entity/src", "--lib"]

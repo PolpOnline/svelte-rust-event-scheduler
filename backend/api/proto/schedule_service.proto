@@ -1,6 +1,8 @@
 syntax = "proto3";
 package online.polp.schedule_service;
 
+import "google/protobuf/timestamp.proto";
+
 service ScheduleService {
   // Ping the service to check if it is alive
   rpc Ping (PingRequest) returns (PingReply);
@@ -8,10 +10,15 @@ service ScheduleService {
   rpc SubscriberCount (SubscriberCountRequest) returns (stream SubscriberCountStreamUpdate);
   // Get all events
   rpc Events (EventsRequest) returns (stream EventsResponse);
-  //  // Subscribe to events
-  //  rpc SubscribeToEvents (EventSubscriptionRequest) returns (EventSubscriptionResponse);
-  //  // Unsubscribe from events
-  //  rpc UnsubscribeFromEvents (EventUnsubscriptionRequest) returns (EventUnsubscriptionResponse);
+  // Subscribe to events (deletes all previous subscriptions)
+  rpc SubscribeToEvents (EventSubscriptionRequest) returns (EventSubscriptionResponse);
+  // Join an event (set the joined_at field to the current time)
+  rpc JoinEvent (EventJoinRequest) returns (EventJoinResponse);
+  // Leave an event (set the left_at field to the current time)
+  rpc LeaveEvent (EventLeaveRequest) returns (EventLeaveResponse);
+  // Get all users that joined an event for a given round, with the joined_at and left_at fields,
+  // along with all the user's info
+  rpc EventUsersStatus (EventUsersStatusRequest) returns (stream EventUsersStatusResponse);
 }
 
 message PingRequest {}
@@ -24,7 +31,7 @@ message SubscriberCountRequest {}
 
 message SubscriberCountStreamUpdate {
   int32 id = 1;
-  int32 subscriberCount = 2;
+  uint64 subscriberCount = 2;
 }
 
 message EventsRequest {}
@@ -39,18 +46,46 @@ message EventsResponse {
 }
 
 message EventSubscriptionRequest {
-  repeated int32 id = 1;
+  int32 user_id = 1;
+  repeated int32 event_ids = 2;
 }
 
-message EventSubscriptionResponse {
-  bool success = 1;
+message EventSubscriptionResponse {}
+
+message EventJoinRequest {
+  int32 user_id = 1;
+  int32 event_id = 2;
 }
 
-message EventUnsubscriptionRequest {
-  repeated int32 id = 1;
+message EventJoinResponse {}
+
+message EventLeaveRequest {
+  int32 user_id = 1;
+  int32 event_id = 2;
 }
 
-message EventUnsubscriptionResponse {
-  bool success = 1;
+message EventLeaveResponse {}
+
+message EventUsersStatusRequest {
+  int32 event_id = 1;
+  int32 round = 2;
+}
+
+message UserInfoStatus {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  int32 section = 4;
+  string class = 5;
+}
+
+message EventUsersStatusResponse {
+  int32 id = 1;
+  optional string name = 2;
+  string email = 3;
+  int32 section = 4;
+  optional string class = 5;
+  optional google.protobuf.Timestamp joined_at = 6;
+  optional google.protobuf.Timestamp left_at = 7;
 }
 

@@ -1,6 +1,6 @@
 use grpc::start_server;
 
-// mod auth;
+// TODO: Complete auth and enable its module
 // mod auth;
 mod grpc;
 

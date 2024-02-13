@@ -6,7 +6,7 @@ use openidconnect::core::{
 };
 use openidconnect::reqwest::async_http_client;
 use openidconnect::{
-    AdditionalProviderMetadata, ClientSecret, IssuerUrl, ProviderMetadata, RedirectUrl,
+    AdditionalProviderMetadata, ClientId, ClientSecret, IssuerUrl, ProviderMetadata, RedirectUrl,
     RevocationUrl,
 };
 use serde::{Deserialize, Serialize};
