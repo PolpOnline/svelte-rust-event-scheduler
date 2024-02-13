@@ -129,6 +129,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(EventUser::EventId).integer().not_null())
                     .col(ColumnDef::new(EventUser::UserId).integer().not_null())
                     .col(ColumnDef::new(EventUser::JoinedAt).date_time())
+                    .col(ColumnDef::new(EventUser::LeftAt).date_time())
                     .col(ColumnDef::new(EventUser::Round).integer().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -243,6 +244,7 @@ enum EventUser {
     EventId,
     UserId,
     JoinedAt,
+    LeftAt,
     Round,
 }
 

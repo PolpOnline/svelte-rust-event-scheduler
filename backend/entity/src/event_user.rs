@@ -9,6 +9,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub user_id: i32,
     pub joined_at: Option<DateTime>,
+    pub left_at: Option<DateTime>,
     #[sea_orm(primary_key, auto_increment = false)]
     pub round: i32,
 }
