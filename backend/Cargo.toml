@@ -27,3 +27,7 @@ path = "./src/server.rs"
 
 [profile.dev.package.backtrace]
 opt-level = 3
+
+# Rust does not inline across crates if link-time optimization (LTO) is off, which it is by default.
+[profile.release]
+lto = true
