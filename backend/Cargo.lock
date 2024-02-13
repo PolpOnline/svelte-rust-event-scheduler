@@ -3499,6 +3499,7 @@ dependencies = [
  "once_cell",
  "openidconnect",
  "prost",
+    "serde",
  "svelte-rust-event-scheduler-service",
  "thiserror",
  "tokio",

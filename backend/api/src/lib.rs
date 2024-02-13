@@ -1,7 +1,8 @@
+use grpc::start_server;
+
+// mod auth;
 // mod auth;
 mod grpc;
-
-use grpc::start_server;
 
 #[tokio::main]
 pub async fn main() {
