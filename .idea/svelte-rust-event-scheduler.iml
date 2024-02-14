@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/backend/api/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/backend/entity/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/backend/migration/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/backend/rest/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/backend/service/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/backend/target" />
       <excludeFolder url="file://$MODULE_DIR$/backend/target" />

@@ -88,4 +88,3 @@ message EventUsersStatusResponse {
   optional google.protobuf.Timestamp joined_at = 6;
   optional google.protobuf.Timestamp left_at = 7;
 }
-

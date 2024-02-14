@@ -13,6 +13,8 @@ async-std = { version = "1", features = ["attributes", "tokio1"] }
 calamine = "0.24.0"
 entity = { path = "../entity" }
 color-eyre = "0.6.2"
+serde = "1.0.196"
+csv = "1.1.6"
 
 [dependencies.sea-orm-migration]
 version = "0.12.0"

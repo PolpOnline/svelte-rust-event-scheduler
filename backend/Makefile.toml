@@ -5,3 +5,11 @@ default_to_workspace = false
 install_crate = "sea-orm-cli"
 command = "sea"
 args = ["generate", "entity", "-o", "entity/src", "--lib"]
+
+[tasks.db]
+command = "docker"
+args = ["compose", "up", "-d", "db"]
+
+[tasks.grpcui]
+command = "grpcui"
+args = ["-plaintext", "-proto", "./api/proto/schedule_service.proto", "localhost:8080"]

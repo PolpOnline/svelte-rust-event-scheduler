@@ -1,3 +1,2 @@
-#GRPC localhost:50051/online.polp.schedule_service.ScheduleService/Ping
+GRPC localhost:8080/online.polp.schedule_service.ScheduleService/Ping
 
-GRPC localhost:50051/online.polp.schedule_service.ScheduleService/Events

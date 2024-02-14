@@ -1,5 +1,6 @@
 mod entity_response_conversion;
 
+use axum::Router;
 use std::env;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -22,7 +23,6 @@ use tokio_stream::wrappers::ReceiverStream;
 use tonic::codegen::tokio_stream;
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tonic::metadata::MetadataValue;
-use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 use tracing::info;
 
@@ -41,12 +41,23 @@ pub enum StartServerError {
     Migration(#[from] migration::error::Error),
 
     #[error("Failed to start the server")]
-    Server(#[from] tonic::transport::Error),
+    Axum(#[from] axum::Error),
+
+    #[error("Failed to start the server")]
+    Io(#[from] std::io::Error),
+
+    #[error("Failed to start the server")]
+    Hyper(#[from] hyper::Error),
+
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }
 
 pub async fn start_server() -> Result<(), StartServerError> {
     // GET the address to listen on from an environment variable
-    let addr = env::var("ADDRESS")?.parse()?;
+    let addr = env::var("ADDRESS")
+        .unwrap_or("[::]:80".to_string())
+        .parse()?;
 
     let db_url = env::var("DATABASE_URL")?;
     let db = Database::connect(db_url).await?;
@@ -57,14 +68,19 @@ pub async fn start_server() -> Result<(), StartServerError> {
         ..Default::default()
     };
 
-    info!("Service listening on {}", addr);
-
     let schedule_service_server =
         ScheduleServiceServer::with_interceptor(schedule_service, check_auth_interceptor);
 
-    Server::builder()
-        .add_service(schedule_service_server)
-        .serve(addr)
+    let schedule_service_server = tonic_web::enable(schedule_service_server);
+    let app = Router::new().route(
+        "/online.polp.schedule_service.ScheduleService/*rpc",
+        axum::routing::any_service(schedule_service_server.clone()),
+    );
+
+    info!("Service will listen on {}", addr);
+
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
         .await?;
 
     Ok(())
